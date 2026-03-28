@@ -64,4 +64,42 @@ class User_model extends CI_Model
                 'last_login_at' => date('Y-m-d H:i:s')
             ]);
     }
+
+    public function store_password_reset_token($data)
+    {
+        return $this->db->insert('password_reset_tokens', $data);
+    }
+
+    public function get_valid_password_reset_token($tokenHash)
+    {
+        return $this->db
+            ->where('token_hash', $tokenHash)
+            ->where('used_at IS NULL', null, false)
+            ->where('expires_at >', date('Y-m-d H:i:s'))
+            ->get('password_reset_tokens')
+            ->row();
+    }
+
+    public function mark_password_reset_token_used($tokenId)
+    {
+        return $this->db
+            ->where('id', $tokenId)
+            ->update('password_reset_tokens', [
+                'used_at' => date('Y-m-d H:i:s')
+            ]);
+    }
+
+    public function update_password($userId, $passwordHash)
+    {
+        return $this->db
+            ->where('id', $userId)
+            ->update('users', [
+                'password_hash' => $passwordHash,
+                'updated_at' => date('Y-m-d H:i:s')
+            ]);
+    }
+
+    
+
+    
 }

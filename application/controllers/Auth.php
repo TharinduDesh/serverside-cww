@@ -224,4 +224,80 @@ class Auth extends CI_Controller
 
         $this->session->set_userdata('last_activity', time());
     }
+
+    public function forgot_password()
+    {
+        $data['title'] = 'Forgot Password';
+
+        if ($this->input->method() === 'post') {
+            $this->form_validation->set_rules('email', 'University Email', 'required|trim|valid_email');
+
+            if ($this->form_validation->run() === TRUE) {
+                $email = strtolower(trim($this->input->post('email', TRUE)));
+                $user = $this->User_model->get_user_by_email($email);
+
+                if ($user) {
+                    $rawToken = bin2hex(random_bytes(32));
+                    $tokenHash = hash('sha256', $rawToken);
+
+                    $this->User_model->store_password_reset_token([
+                        'user_id'    => $user->id,
+                        'token_hash' => $tokenHash,
+                        'expires_at' => date('Y-m-d H:i:s', strtotime('+1 hour'))
+                    ]);
+
+                    $data['success_message'] = 'Password reset link (test): ' .
+                        site_url('auth/reset_password?token=' . $rawToken);
+                } else {
+                    $data['success_message'] = 'If that email exists, a password reset link has been generated.';
+                }
+            }
+        }
+
+        $this->load->view('auth/forgot_password', $data);
+    }
+
+    public function reset_password()
+    {
+        $data['title'] = 'Reset Password';
+
+        $rawToken = $this->input->get('token', TRUE);
+
+        if (empty($rawToken)) {
+            show_error('Invalid reset link.', 400);
+        }
+
+        $tokenHash = hash('sha256', $rawToken);
+        $tokenRow = $this->User_model->get_valid_password_reset_token($tokenHash);
+
+        if (!$tokenRow) {
+            show_error('Reset link is invalid, expired, or already used.', 400);
+        }
+
+        if ($this->input->method() === 'post') {
+            $this->form_validation->set_rules(
+                'password',
+                'Password',
+                'required|trim|min_length[8]|max_length[64]|callback_strong_password_check'
+            );
+            $this->form_validation->set_rules(
+                'confirm_password',
+                'Confirm Password',
+                'required|trim|matches[password]'
+            );
+
+            if ($this->form_validation->run() === TRUE) {
+                $passwordHash = password_hash($this->input->post('password'), PASSWORD_BCRYPT);
+
+                $this->User_model->update_password($tokenRow->user_id, $passwordHash);
+                $this->User_model->mark_password_reset_token_used($tokenRow->id);
+
+                echo 'Password reset successful. You can now log in.';
+                return;
+            }
+        }
+
+        $data['token'] = $rawToken;
+        $this->load->view('auth/reset_password', $data);
+    }
 }

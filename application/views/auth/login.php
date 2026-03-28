@@ -36,5 +36,6 @@
         </p>
 
     <?= form_close(); ?>
+    <p><a href="<?= site_url('auth/forgot_password'); ?>">Forgot password?</a></p>
 </body>
 </html>
