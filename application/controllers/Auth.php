@@ -97,6 +97,27 @@ class Auth extends CI_Controller
         return TRUE;
     }
 
+    public function verify()
+    {
+        $rawToken = $this->input->get('token', TRUE);
+
+        if (!$rawToken) {
+            show_error('Invalid verification link.', 400);
+        }
+
+        $tokenHash = hash('sha256', $rawToken);
+        $tokenRow = $this->User_model->get_valid_verification_token($tokenHash);
+
+        if (!$tokenRow) {
+            show_error('Verification link is invalid, expired, or already used.', 400);
+        }
+
+        $this->User_model->mark_email_verified($tokenRow->user_id);
+        $this->User_model->mark_verification_token_used($tokenRow->id);
+
+        echo 'Email verified successfully. You can now log in.';
+    }
+
     public function strong_password_check($password)
     {
         $hasUpper = preg_match('/[A-Z]/', $password);
