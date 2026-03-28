@@ -46,4 +46,22 @@ class User_model extends CI_Model
                 'used_at' => date('Y-m-d H:i:s')
             ]);
     }
+
+    public function get_user_by_email($email)
+    {
+        return $this->db
+            ->where('university_email', $email)
+            ->where('is_active', 1)
+            ->get('users')
+            ->row();
+    }
+
+    public function update_last_login($userId)
+    {
+        return $this->db
+            ->where('id', $userId)
+            ->update('users', [
+                'last_login_at' => date('Y-m-d H:i:s')
+            ]);
+    }
 }

@@ -135,4 +135,93 @@ class Auth extends CI_Controller
 
         return TRUE;
     }
+
+    public function login()
+    {
+        $data['title'] = 'Login';
+
+        if ($this->input->method() === 'post') {
+            $this->form_validation->set_rules('email', 'Email', 'required|trim|valid_email');
+            $this->form_validation->set_rules('password', 'Password', 'required|trim');
+
+            if ($this->form_validation->run() === TRUE) {
+                $email = strtolower(trim($this->input->post('email', TRUE)));
+                $password = $this->input->post('password');
+
+                $user = $this->User_model->get_user_by_email($email);
+
+                if (!$user) {
+                    $data['error_message'] = 'Invalid email or password.';
+                    $this->load->view('auth/login', $data);
+                    return;
+                }
+
+                if ((int)$user->email_verified !== 1) {
+                    $data['error_message'] = 'Please verify your email before logging in.';
+                    $this->load->view('auth/login', $data);
+                    return;
+                }
+
+                if (!password_verify($password, $user->password_hash)) {
+                    $data['error_message'] = 'Invalid email or password.';
+                    $this->load->view('auth/login', $data);
+                    return;
+                }
+
+                $sessionData = [
+                    'user_id'         => $user->id,
+                    'user_email'      => $user->university_email,
+                    'first_name'      => $user->first_name,
+                    'last_name'       => $user->last_name,
+                    'role'            => $user->role,
+                    'logged_in'       => TRUE,
+                    'last_activity'   => time()
+                ];
+
+                $this->session->set_userdata($sessionData);
+                $this->session->sess_regenerate(TRUE);
+
+                $this->User_model->update_last_login($user->id);
+
+                redirect('auth/dashboard');
+                return;
+            }
+        }
+
+        $this->load->view('auth/login', $data);
+    }
+
+    public function dashboard()
+    {
+        if (!$this->session->userdata('logged_in')) {
+            redirect('auth/login');
+            return;
+        }
+
+        $this->check_session_timeout();
+
+        echo '<h1>Welcome, ' . html_escape($this->session->userdata('first_name')) . '</h1>';
+        echo '<p>You are logged in.</p>';
+        echo '<p><a href="' . site_url('auth/logout') . '">Logout</a></p>';
+    }
+
+    public function logout()
+    {
+        $this->session->sess_destroy();
+        redirect('auth/login');
+    }
+
+    private function check_session_timeout()
+    {
+        $lastActivity = $this->session->userdata('last_activity');
+        $timeoutSeconds = 7200; // 2 hours
+
+        if ($lastActivity && (time() - $lastActivity > $timeoutSeconds)) {
+            $this->session->sess_destroy();
+            redirect('auth/login');
+            exit;
+        }
+
+        $this->session->set_userdata('last_activity', time());
+    }
 }
