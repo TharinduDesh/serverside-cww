@@ -83,3 +83,22 @@ defined('EXIT_USER_INPUT')     OR define('EXIT_USER_INPUT', 7); // invalid user 
 defined('EXIT_DATABASE')       OR define('EXIT_DATABASE', 8); // database error
 defined('EXIT__AUTO_MIN')      OR define('EXIT__AUTO_MIN', 9); // lowest automatically-assigned error code
 defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest automatically-assigned error code
+
+
+
+/*
+|--------------------------------------------------------------------------
+| Gmail SMTP Configuration Constants
+|--------------------------------------------------------------------------
+|
+| 
+|
+*/
+
+define('SMTP_HOST', 'smtp.gmail.com');
+define('SMTP_PORT', 465);
+define('SMTP_USER', 'yourgmail@gmail.com');
+define('SMTP_PASS', 'your_16_digit_app_password');
+define('SMTP_FROM_EMAIL', 'yourgmail@gmail.com');
+define('SMTP_FROM_NAME', 'Alumni Influencer Platform');
+

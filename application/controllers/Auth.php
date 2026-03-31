@@ -3,12 +3,38 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Auth extends CI_Controller
 {
-    private $allowed_domain = 'westminster.ac.uk';
+    private $allowed_domains = ['westminster.ac.uk', 'gmail.com'];
 
     public function __construct()
     {
         parent::__construct();
         $this->load->model('User_model');
+        $this->load->library('email');
+    }
+
+    private function send_email_message($to, $subject, $message)
+    {
+        $config = [
+            'protocol'    => 'smtp',
+            'smtp_host'   => SMTP_HOST,
+            'smtp_port'   => SMTP_PORT,
+            'smtp_user'   => SMTP_USER,
+            'smtp_pass'   => SMTP_PASS,
+            'smtp_crypto' => 'ssl',
+            'mailtype'    => 'html',
+            'charset'     => 'utf-8',
+            'wordwrap'    => TRUE,
+            'newline'     => "\r\n",
+            'crlf'        => "\r\n"
+        ];
+
+        $this->email->initialize($config);
+        $this->email->from(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+        $this->email->to($to);
+        $this->email->subject($subject);
+        $this->email->message($message);
+
+        return $this->email->send();
     }
 
     public function register()
@@ -54,9 +80,29 @@ class Auth extends CI_Controller
                     'expires_at' => date('Y-m-d H:i:s', strtotime('+1 day'))
                 ]);
 
-                // Temporary for testing before real email sending
-                $data['success_message'] = 'Registration successful. Verify your email using this test link: '
-                    . site_url('auth/verify?token=' . $rawToken);
+                $verifyLink = site_url('auth/verify?token=' . $rawToken);
+
+                $message = '
+                    <h2>Verify Your Email</h2>
+                    <p>Thank you for registering for the Alumni Influencer Platform.</p>
+                    <p>Please click the link below to verify your account:</p>
+                    <p><a href="' . $verifyLink . '">Verify Email</a></p>
+                    <p>This link will expire in 24 hours.</p>
+                ';
+
+                $emailSent = $this->send_email_message(
+                    $email,
+                    'Verify your Alumni Influencer account',
+                    $message
+                );
+
+                if ($emailSent) {
+                    $data['success_message'] = 'Registration successful. A verification email has been sent to your university email address.';
+                } else {
+                    $data['error_message'] = 'Registration succeeded, but the verification email could not be sent.';
+                    // For local debugging only:
+                    // $data['error_message'] .= '<br><pre>' . $this->email->print_debugger() . '</pre>';
+                }
 
                 $this->load->view('auth/register', $data);
                 return;
@@ -71,10 +117,10 @@ class Auth extends CI_Controller
         $email = strtolower(trim($email));
         $parts = explode('@', $email);
 
-        if (count($parts) !== 2 || $parts[1] !== $this->allowed_domain) {
+        if (count($parts) !== 2 || !in_array($parts[1], $this->allowed_domains, TRUE)) {
             $this->form_validation->set_message(
                 'email_domain_check',
-                'You must register using a valid university email address.'
+                'You must register using an allowed email address.'
             );
             return FALSE;
         }
@@ -169,13 +215,13 @@ class Auth extends CI_Controller
                 }
 
                 $sessionData = [
-                    'user_id'         => $user->id,
-                    'user_email'      => $user->university_email,
-                    'first_name'      => $user->first_name,
-                    'last_name'       => $user->last_name,
-                    'role'            => $user->role,
-                    'logged_in'       => TRUE,
-                    'last_activity'   => time()
+                    'user_id'       => $user->id,
+                    'user_email'    => $user->university_email,
+                    'first_name'    => $user->first_name,
+                    'last_name'     => $user->last_name,
+                    'role'          => $user->role,
+                    'logged_in'     => TRUE,
+                    'last_activity' => time()
                 ];
 
                 $this->session->set_userdata($sessionData);
@@ -214,7 +260,7 @@ class Auth extends CI_Controller
     private function check_session_timeout()
     {
         $lastActivity = $this->session->userdata('last_activity');
-        $timeoutSeconds = 7200; // 2 hours
+        $timeoutSeconds = 7200;
 
         if ($lastActivity && (time() - $lastActivity > $timeoutSeconds)) {
             $this->session->sess_destroy();
@@ -246,11 +292,24 @@ class Auth extends CI_Controller
                         'expires_at' => date('Y-m-d H:i:s', strtotime('+1 hour'))
                     ]);
 
-                    $data['success_message'] = 'Password reset link (test): ' .
-                        site_url('auth/reset_password?token=' . $rawToken);
-                } else {
-                    $data['success_message'] = 'If that email exists, a password reset link has been generated.';
+                    $resetLink = site_url('auth/reset_password?token=' . $rawToken);
+
+                    $message = '
+                        <h2>Password Reset Request</h2>
+                        <p>You requested to reset your password.</p>
+                        <p>Click the link below to continue:</p>
+                        <p><a href="' . $resetLink . '">Reset Password</a></p>
+                        <p>This link will expire in 1 hour.</p>
+                    ';
+
+                    $this->send_email_message(
+                        $email,
+                        'Reset your Alumni Influencer password',
+                        $message
+                    );
                 }
+
+                $data['success_message'] = 'If that email exists, a password reset link has been sent.';
             }
         }
 
