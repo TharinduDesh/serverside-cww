@@ -37,5 +37,10 @@
 
     <?= form_close(); ?>
     <p><a href="<?= site_url('auth/forgot_password'); ?>">Forgot password?</a></p>
+    <?php if ($this->session->flashdata('success_message')): ?>
+        <div style="color: green; margin-bottom: 15px;">
+            <?= html_escape($this->session->flashdata('success_message')); ?>
+        </div>
+    <?php endif; ?>
 </body>
 </html>

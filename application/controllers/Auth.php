@@ -161,7 +161,8 @@ class Auth extends CI_Controller
         $this->User_model->mark_email_verified($tokenRow->user_id);
         $this->User_model->mark_verification_token_used($tokenRow->id);
 
-        echo 'Email verified successfully. You can now log in.';
+        $this->session->set_flashdata('success_message', 'Email verified successfully. You can now log in.');
+        redirect('auth/login');
     }
 
     public function strong_password_check($password)
@@ -248,6 +249,7 @@ class Auth extends CI_Controller
 
         echo '<h1>Welcome, ' . html_escape($this->session->userdata('first_name')) . '</h1>';
         echo '<p>You are logged in.</p>';
+        echo '<p><a href="' . site_url('profile') . '">Manage Profile</a></p>';
         echo '<p><a href="' . site_url('auth/logout') . '">Logout</a></p>';
     }
 
@@ -351,7 +353,8 @@ class Auth extends CI_Controller
                 $this->User_model->update_password($tokenRow->user_id, $passwordHash);
                 $this->User_model->mark_password_reset_token_used($tokenRow->id);
 
-                echo 'Password reset successful. You can now log in.';
+                $this->session->set_flashdata('success_message', 'Password reset successful. You can now log in.');
+                redirect('auth/login');
                 return;
             }
         }

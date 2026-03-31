@@ -97,8 +97,8 @@ defined('EXIT__AUTO_MAX')      OR define('EXIT__AUTO_MAX', 125); // highest auto
 
 define('SMTP_HOST', 'smtp.gmail.com');
 define('SMTP_PORT', 465);
-define('SMTP_USER', 'yourgmail@gmail.com');
-define('SMTP_PASS', 'your_16_digit_app_password');
-define('SMTP_FROM_EMAIL', 'yourgmail@gmail.com');
+define('SMTP_USER', 'tharindudrm@gmail.com');
+define('SMTP_PASS', 'tazk ptvv bmgd qrng');
+define('SMTP_FROM_EMAIL', 'tharindudrm@gmail.com');
 define('SMTP_FROM_NAME', 'Alumni Influencer Platform');
 
