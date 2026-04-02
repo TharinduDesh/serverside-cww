@@ -1,0 +1,176 @@
+{
+	"openapi": "3.0.3",
+	"info": {
+		"title": "Alumni Influencer API",
+		"version": "1.0.0",
+		"description": "API documentation for the Alumni Influencer coursework project."
+	},
+	"servers": [
+		{
+			"url": "http://localhost/serverside-cww/index.php",
+			"description": "Local development server"
+		}
+	],
+	"tags": [
+		{
+			"name": "Public API",
+			"description": "Public endpoints"
+		},
+		{
+			"name": "Protected API",
+			"description": "Bearer-token protected endpoints"
+		}
+	],
+	"paths": {
+		"/api/featured_today": {
+			"get": {
+				"tags": ["Public API"],
+				"summary": "Get today's featured alumnus",
+				"description": "Returns today's featured alumnus and profile data if available.",
+				"responses": {
+					"200": {
+						"description": "Successful response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/FeaturedTodayResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/featured_today_secure": {
+			"get": {
+				"tags": ["Protected API"],
+				"summary": "Get today's featured alumnus (Bearer token required)",
+				"description": "Returns today's featured alumnus and profile data when a valid Bearer token is supplied.",
+				"security": [
+					{
+						"BearerAuth": []
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Successful response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/FeaturedTodayResponse"
+								}
+							}
+						}
+					},
+					"401": {
+						"description": "Missing, invalid, or revoked API key",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	},
+	"components": {
+		"securitySchemes": {
+			"BearerAuth": {
+				"type": "http",
+				"scheme": "bearer",
+				"bearerFormat": "API Key"
+			}
+		},
+		"schemas": {
+			"FeaturedTodayResponse": {
+				"type": "object",
+				"properties": {
+					"status": {
+						"type": "string",
+						"example": "success"
+					},
+					"message": {
+						"type": "string",
+						"nullable": true,
+						"example": "No featured alumnus selected for today yet."
+					},
+					"data": {
+						"oneOf": [
+							{
+								"type": "null"
+							},
+							{
+								"type": "object",
+								"properties": {
+									"feature_date": {
+										"type": "string",
+										"format": "date",
+										"example": "2026-04-02"
+									},
+									"user": {
+										"type": "object",
+										"properties": {
+											"id": {
+												"type": "integer",
+												"example": 5
+											},
+											"first_name": {
+												"type": "string",
+												"example": "Tharindu"
+											},
+											"last_name": {
+												"type": "string",
+												"example": "Perera"
+											}
+										}
+									},
+									"profile": {
+										"type": "object",
+										"properties": {
+											"headline": {
+												"type": "string",
+												"nullable": true,
+												"example": "Software Engineer"
+											},
+											"biography": {
+												"type": "string",
+												"nullable": true,
+												"example": "Graduate working in backend systems."
+											},
+											"linkedin_url": {
+												"type": "string",
+												"nullable": true,
+												"example": "https://www.linkedin.com/in/example"
+											},
+											"profile_image_url": {
+												"type": "string",
+												"nullable": true,
+												"example": "http://localhost/serverside-cww/uploads/profile_images/example.png"
+											}
+										}
+									}
+								}
+							}
+						]
+					}
+				}
+			},
+			"ErrorResponse": {
+				"type": "object",
+				"properties": {
+					"status": {
+						"type": "string",
+						"example": "error"
+					},
+					"message": {
+						"type": "string",
+						"example": "Invalid or revoked API key."
+					}
+				}
+			}
+		}
+	}
+}

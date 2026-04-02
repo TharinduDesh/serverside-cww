@@ -178,3 +178,37 @@ CREATE TABLE featured_alumni (
 CREATE INDEX idx_bids_feature_date ON bids(feature_date);
 CREATE INDEX idx_bids_status ON bids(status);
 CREATE INDEX idx_featured_date ON featured_alumni(feature_date);
+
+
+-- API Keys genaration
+
+CREATE TABLE IF NOT EXISTS api_keys (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    key_name VARCHAR(100) NOT NULL,
+    api_key_hash VARCHAR(255) NOT NULL,
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+    revoked_at DATETIME NULL,
+    last_used_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_api_keys_user
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS api_usage_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    api_key_id INT NOT NULL,
+    endpoint VARCHAR(255) NOT NULL,
+    method VARCHAR(10) NOT NULL,
+    ip_address VARCHAR(45) NULL,
+    user_agent TEXT NULL,
+    accessed_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_api_usage_key
+        FOREIGN KEY (api_key_id) REFERENCES api_keys(id)
+        ON DELETE CASCADE
+);
+
+CREATE INDEX idx_api_keys_user_id ON api_keys(user_id);
+CREATE INDEX idx_api_keys_is_active ON api_keys(is_active);
+CREATE INDEX idx_api_usage_accessed_at ON api_usage_logs(accessed_at);

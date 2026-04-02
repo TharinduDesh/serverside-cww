@@ -15,17 +15,17 @@ class Auth extends CI_Controller
     private function send_email_message($to, $subject, $message)
     {
         $config = [
-            'protocol'    => 'smtp',
-            'smtp_host'   => SMTP_HOST,
-            'smtp_port'   => SMTP_PORT,
-            'smtp_user'   => SMTP_USER,
-            'smtp_pass'   => SMTP_PASS,
+            'protocol' => 'smtp',
+            'smtp_host' => SMTP_HOST,
+            'smtp_port' => SMTP_PORT,
+            'smtp_user' => SMTP_USER,
+            'smtp_pass' => SMTP_PASS,
             'smtp_crypto' => 'ssl',
-            'mailtype'    => 'html',
-            'charset'     => 'utf-8',
-            'wordwrap'    => TRUE,
-            'newline'     => "\r\n",
-            'crlf'        => "\r\n"
+            'mailtype' => 'html',
+            'charset' => 'utf-8',
+            'wordwrap' => TRUE,
+            'newline' => "\r\n",
+            'crlf' => "\r\n"
         ];
 
         $this->email->initialize($config);
@@ -60,13 +60,13 @@ class Auth extends CI_Controller
                 $email = strtolower(trim($this->input->post('email', TRUE)));
 
                 $userData = [
-                    'first_name'       => trim($this->input->post('first_name', TRUE)),
-                    'last_name'        => trim($this->input->post('last_name', TRUE)),
+                    'first_name' => trim($this->input->post('first_name', TRUE)),
+                    'last_name' => trim($this->input->post('last_name', TRUE)),
                     'university_email' => $email,
-                    'password_hash'    => password_hash($this->input->post('password'), PASSWORD_BCRYPT),
-                    'role'             => 'alumnus',
-                    'email_verified'   => 0,
-                    'is_active'        => 1
+                    'password_hash' => password_hash($this->input->post('password'), PASSWORD_BCRYPT),
+                    'role' => 'alumnus',
+                    'email_verified' => 0,
+                    'is_active' => 1
                 ];
 
                 $user_id = $this->User_model->create_user($userData);
@@ -75,7 +75,7 @@ class Auth extends CI_Controller
                 $tokenHash = hash('sha256', $rawToken);
 
                 $this->User_model->store_verification_token([
-                    'user_id'    => $user_id,
+                    'user_id' => $user_id,
                     'token_hash' => $tokenHash,
                     'expires_at' => date('Y-m-d H:i:s', strtotime('+1 day'))
                 ]);
@@ -203,7 +203,7 @@ class Auth extends CI_Controller
                     return;
                 }
 
-                if ((int)$user->email_verified !== 1) {
+                if ((int) $user->email_verified !== 1) {
                     $data['error_message'] = 'Please verify your email before logging in.';
                     $this->load->view('auth/login', $data);
                     return;
@@ -216,12 +216,12 @@ class Auth extends CI_Controller
                 }
 
                 $sessionData = [
-                    'user_id'       => $user->id,
-                    'user_email'    => $user->university_email,
-                    'first_name'    => $user->first_name,
-                    'last_name'     => $user->last_name,
-                    'role'          => $user->role,
-                    'logged_in'     => TRUE,
+                    'user_id' => $user->id,
+                    'user_email' => $user->university_email,
+                    'first_name' => $user->first_name,
+                    'last_name' => $user->last_name,
+                    'role' => $user->role,
+                    'logged_in' => TRUE,
                     'last_activity' => time()
                 ];
 
@@ -250,6 +250,8 @@ class Auth extends CI_Controller
         echo '<h1>Welcome, ' . html_escape($this->session->userdata('first_name')) . '</h1>';
         echo '<p>You are logged in.</p>';
         echo '<p><a href="' . site_url('profile') . '">Manage Profile</a></p>';
+        echo '<p><a href="' . site_url('bidding') . '">Blind Bidding</a></p>';
+        echo '<p><a href="' . site_url('developer') . '">Developer API Keys</a></p>';
         echo '<p><a href="' . site_url('auth/logout') . '">Logout</a></p>';
     }
 
@@ -289,7 +291,7 @@ class Auth extends CI_Controller
                     $tokenHash = hash('sha256', $rawToken);
 
                     $this->User_model->store_password_reset_token([
-                        'user_id'    => $user->id,
+                        'user_id' => $user->id,
                         'token_hash' => $tokenHash,
                         'expires_at' => date('Y-m-d H:i:s', strtotime('+1 hour'))
                     ]);
