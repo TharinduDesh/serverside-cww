@@ -16,10 +16,10 @@ class Auth extends CI_Controller
     {
         $config = [
             'protocol' => 'smtp',
-            'smtp_host' => SMTP_HOST,
-            'smtp_port' => SMTP_PORT,
-            'smtp_user' => SMTP_USER,
-            'smtp_pass' => SMTP_PASS,
+            'smtp_host' => $_ENV['SMTP_HOST'] ?? 'smtp.gmail.com',
+            'smtp_port' => (int) ($_ENV['SMTP_PORT'] ?? 465),
+            'smtp_user' => $_ENV['SMTP_USER'] ?? '',
+            'smtp_pass' => $_ENV['SMTP_PASS'] ?? '',
             'smtp_crypto' => 'ssl',
             'mailtype' => 'html',
             'charset' => 'utf-8',
@@ -29,7 +29,12 @@ class Auth extends CI_Controller
         ];
 
         $this->email->initialize($config);
-        $this->email->from(SMTP_FROM_EMAIL, SMTP_FROM_NAME);
+
+        $this->email->from(
+            $_ENV['SMTP_FROM_EMAIL'] ?? '',
+            $_ENV['SMTP_FROM_NAME'] ?? 'App'
+        );
+
         $this->email->to($to);
         $this->email->subject($subject);
         $this->email->message($message);
@@ -209,6 +214,14 @@ class Auth extends CI_Controller
                     return;
                 }
 
+                // Check if account is locked due to failed login attempts
+
+                if (!empty($user->locked_until) && strtotime($user->locked_until) > time()) {
+                    $data['error_message'] = 'Your account is temporarily locked due to repeated failed login attempts. Please try again later.';
+                    $this->load->view('auth/login', $data);
+                    return;
+                }
+
                 if (!password_verify($password, $user->password_hash)) {
                     $data['error_message'] = 'Invalid email or password.';
                     $this->load->view('auth/login', $data);
@@ -364,4 +377,5 @@ class Auth extends CI_Controller
         $data['token'] = $rawToken;
         $this->load->view('auth/reset_password', $data);
     }
+
 }

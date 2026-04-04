@@ -10,7 +10,7 @@ class Profile extends CI_Controller
         $this->load->library('upload');
     }
 
-   
+
     private function require_login()
     {
         if (!$this->session->userdata('logged_in')) {
@@ -42,7 +42,7 @@ class Profile extends CI_Controller
         $data['certifications'] = $this->Profile_model->get_certifications_by_user_id($userId);
         $data['licences'] = $this->Profile_model->get_licences_by_user_id($userId);
         $data['courses'] = $this->Profile_model->get_courses_by_user_id($userId);
-         $data['employment_history'] = $this->Profile_model->get_employment_history_by_user_id($userId);
+        $data['employment_history'] = $this->Profile_model->get_employment_history_by_user_id($userId);
 
         $this->load->view('profile/index', $data);
     }
@@ -78,12 +78,13 @@ class Profile extends CI_Controller
             }
 
             $config = [
-                'upload_path'   => $uploadPath,
+                'upload_path' => $uploadPath,
                 'allowed_types' => 'jpg|jpeg|png',
-                'max_size'      => 2048,
-                'max_width'     => 3000,
-                'max_height'    => 3000,
-                'encrypt_name'  => TRUE
+                'max_size' => 2048,
+                'max_width' => 3000,
+                'max_height' => 3000,
+                'encrypt_name' => TRUE,
+                'remove_spaces' => TRUE
             ];
 
             $this->upload->initialize($config);
@@ -97,6 +98,17 @@ class Profile extends CI_Controller
             }
 
             $uploadData = $this->upload->data();
+
+            $allowedMimeTypes = ['image/jpeg', 'image/png'];
+            if (!in_array($uploadData['file_type'], $allowedMimeTypes, TRUE)) {
+                @unlink($uploadData['full_path']);
+                $data['title'] = 'My Profile';
+                $data['profile'] = $existingProfile;
+                $data['error_message'] = 'Invalid image type uploaded.';
+                $this->load->view('profile/index', $data);
+                return;
+            }
+
             $newProfileImage = 'uploads/profile_images/' . $uploadData['file_name'];
 
             // Delete old image if it exists
@@ -113,10 +125,10 @@ class Profile extends CI_Controller
         }
 
         $profileData = [
-            'user_id'       => $userId,
-            'headline'      => trim($this->input->post('headline', TRUE)),
-            'biography'     => trim($this->input->post('biography', TRUE)),
-            'linkedin_url'  => trim($this->input->post('linkedin_url', TRUE)),
+            'user_id' => $userId,
+            'headline' => trim($this->input->post('headline', TRUE)),
+            'biography' => trim($this->input->post('biography', TRUE)),
+            'linkedin_url' => trim($this->input->post('linkedin_url', TRUE)),
             'profile_image' => $profileImage
         ];
 
@@ -131,7 +143,7 @@ class Profile extends CI_Controller
         redirect('profile');
     }
 
-     private function is_valid_url($url)
+    private function is_valid_url($url)
     {
         $url = trim($url);
 
@@ -217,11 +229,11 @@ class Profile extends CI_Controller
         }
 
         $degreeData = [
-            'user_id'          => $userId,
-            'degree_name'      => trim($this->input->post('degree_name', TRUE)),
+            'user_id' => $userId,
+            'degree_name' => trim($this->input->post('degree_name', TRUE)),
             'institution_name' => trim($this->input->post('institution_name', TRUE)),
-            'degree_url'       => trim($this->input->post('degree_url', TRUE)),
-            'completion_date'  => $this->input->post('completion_date', TRUE) ?: null
+            'degree_url' => trim($this->input->post('degree_url', TRUE)),
+            'completion_date' => $this->input->post('completion_date', TRUE) ?: null
         ];
 
         $this->Profile_model->create_degree($degreeData);
@@ -254,10 +266,10 @@ class Profile extends CI_Controller
         }
 
         $degreeData = [
-            'degree_name'      => trim($this->input->post('degree_name', TRUE)),
+            'degree_name' => trim($this->input->post('degree_name', TRUE)),
             'institution_name' => trim($this->input->post('institution_name', TRUE)),
-            'degree_url'       => trim($this->input->post('degree_url', TRUE)),
-            'completion_date'  => $this->input->post('completion_date', TRUE) ?: null
+            'degree_url' => trim($this->input->post('degree_url', TRUE)),
+            'completion_date' => $this->input->post('completion_date', TRUE) ?: null
         ];
 
         $this->Profile_model->update_degree($id, $userId, $degreeData);
@@ -285,7 +297,7 @@ class Profile extends CI_Controller
 
     // Certficate-related methods
 
-   public function valid_certification_url($url)
+    public function valid_certification_url($url)
     {
         if (!$this->is_valid_url($url)) {
             $this->form_validation->set_message('valid_certification_url', 'Please enter a valid certification URL.');
@@ -318,11 +330,11 @@ class Profile extends CI_Controller
         }
 
         $certificationData = [
-            'user_id'               => $userId,
-            'certification_name'    => trim($this->input->post('certification_name', TRUE)),
-            'issuing_organization'  => trim($this->input->post('issuing_organization', TRUE)),
-            'certification_url'     => trim($this->input->post('certification_url', TRUE)),
-            'completion_date'       => $this->input->post('certification_completion_date', TRUE) ?: null
+            'user_id' => $userId,
+            'certification_name' => trim($this->input->post('certification_name', TRUE)),
+            'issuing_organization' => trim($this->input->post('issuing_organization', TRUE)),
+            'certification_url' => trim($this->input->post('certification_url', TRUE)),
+            'completion_date' => $this->input->post('certification_completion_date', TRUE) ?: null
         ];
 
         $this->Profile_model->create_certification($certificationData);
@@ -355,10 +367,10 @@ class Profile extends CI_Controller
         }
 
         $certificationData = [
-            'certification_name'   => trim($this->input->post('certification_name', TRUE)),
+            'certification_name' => trim($this->input->post('certification_name', TRUE)),
             'issuing_organization' => trim($this->input->post('issuing_organization', TRUE)),
-            'certification_url'    => trim($this->input->post('certification_url', TRUE)),
-            'completion_date'      => $this->input->post('completion_date', TRUE) ?: null
+            'certification_url' => trim($this->input->post('certification_url', TRUE)),
+            'completion_date' => $this->input->post('completion_date', TRUE) ?: null
         ];
 
         $this->Profile_model->update_certification($id, $userId, $certificationData);
@@ -421,10 +433,10 @@ class Profile extends CI_Controller
         }
 
         $licenceData = [
-            'user_id'         => $userId,
-            'licence_name'    => trim($this->input->post('licence_name', TRUE)),
-            'issuing_body'    => trim($this->input->post('issuing_body', TRUE)),
-            'licence_url'     => trim($this->input->post('licence_url', TRUE)),
+            'user_id' => $userId,
+            'licence_name' => trim($this->input->post('licence_name', TRUE)),
+            'issuing_body' => trim($this->input->post('issuing_body', TRUE)),
+            'licence_url' => trim($this->input->post('licence_url', TRUE)),
             'completion_date' => $this->input->post('licence_completion_date', TRUE) ?: null
         ];
 
@@ -458,9 +470,9 @@ class Profile extends CI_Controller
         }
 
         $licenceData = [
-            'licence_name'    => trim($this->input->post('licence_name', TRUE)),
-            'issuing_body'    => trim($this->input->post('issuing_body', TRUE)),
-            'licence_url'     => trim($this->input->post('licence_url', TRUE)),
+            'licence_name' => trim($this->input->post('licence_name', TRUE)),
+            'issuing_body' => trim($this->input->post('issuing_body', TRUE)),
+            'licence_url' => trim($this->input->post('licence_url', TRUE)),
             'completion_date' => $this->input->post('completion_date', TRUE) ?: null
         ];
 
@@ -523,10 +535,10 @@ class Profile extends CI_Controller
         }
 
         $courseData = [
-            'user_id'         => $userId,
-            'course_name'     => trim($this->input->post('course_name', TRUE)),
-            'provider_name'   => trim($this->input->post('provider_name', TRUE)),
-            'course_url'      => trim($this->input->post('course_url', TRUE)),
+            'user_id' => $userId,
+            'course_name' => trim($this->input->post('course_name', TRUE)),
+            'provider_name' => trim($this->input->post('provider_name', TRUE)),
+            'course_url' => trim($this->input->post('course_url', TRUE)),
             'completion_date' => $this->input->post('course_completion_date', TRUE) ?: null
         ];
 
@@ -560,9 +572,9 @@ class Profile extends CI_Controller
         }
 
         $courseData = [
-            'course_name'     => trim($this->input->post('course_name', TRUE)),
-            'provider_name'   => trim($this->input->post('provider_name', TRUE)),
-            'course_url'      => trim($this->input->post('course_url', TRUE)),
+            'course_name' => trim($this->input->post('course_name', TRUE)),
+            'provider_name' => trim($this->input->post('provider_name', TRUE)),
+            'course_url' => trim($this->input->post('course_url', TRUE)),
             'completion_date' => $this->input->post('completion_date', TRUE) ?: null
         ];
 
@@ -652,13 +664,13 @@ class Profile extends CI_Controller
         }
 
         $employmentData = [
-            'user_id'      => $userId,
+            'user_id' => $userId,
             'company_name' => trim($this->input->post('company_name', TRUE)),
-            'job_title'    => trim($this->input->post('job_title', TRUE)),
-            'start_date'   => $startDate,
-            'end_date'     => $isCurrent ? null : ($endDate ?: null),
-            'is_current'   => $isCurrent,
-            'description'  => trim($this->input->post('description', TRUE))
+            'job_title' => trim($this->input->post('job_title', TRUE)),
+            'start_date' => $startDate,
+            'end_date' => $isCurrent ? null : ($endDate ?: null),
+            'is_current' => $isCurrent,
+            'description' => trim($this->input->post('description', TRUE))
         ];
 
         $this->Profile_model->create_employment($employmentData);
@@ -700,11 +712,11 @@ class Profile extends CI_Controller
 
         $employmentData = [
             'company_name' => trim($this->input->post('company_name', TRUE)),
-            'job_title'    => trim($this->input->post('job_title', TRUE)),
-            'start_date'   => $startDate,
-            'end_date'     => $isCurrent ? null : ($endDate ?: null),
-            'is_current'   => $isCurrent,
-            'description'  => trim($this->input->post('description', TRUE))
+            'job_title' => trim($this->input->post('job_title', TRUE)),
+            'start_date' => $startDate,
+            'end_date' => $isCurrent ? null : ($endDate ?: null),
+            'is_current' => $isCurrent,
+            'description' => trim($this->input->post('description', TRUE))
         ];
 
         $this->Profile_model->update_employment($id, $userId, $employmentData);

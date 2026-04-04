@@ -74,11 +74,11 @@ $active_group = 'default';
 $query_builder = TRUE;
 
 $db['default'] = array(
-	'dsn'	=> '',
-	'hostname' => 'localhost',
-	'username' => 'root',
-	'password' => '',
-	'database' => 'alumni_influencer_db',
+	'dsn' => '',
+	'hostname' => $_ENV['DB_HOST'] ?? 'localhost',
+	'username' => $_ENV['DB_USER'] ?? 'root',
+	'password' => $_ENV['DB_PASS'] ?? '',
+	'database' => $_ENV['DB_NAME'] ?? 'alumni_influencer_db',
 	'dbdriver' => 'mysqli',
 	'dbprefix' => '',
 	'pconnect' => FALSE,

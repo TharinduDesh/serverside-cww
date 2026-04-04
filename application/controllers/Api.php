@@ -95,6 +95,13 @@ class Api extends CI_Controller
 
     public function featured_today()
     {
+        // Allow public access but only for GET requests
+        if ($this->input->method(TRUE) !== 'GET') {
+            $this->respond([
+                'status' => 'error',
+                'message' => 'Method not allowed.'
+            ], 405);
+        }
         $featureDate = date('Y-m-d');
         $featured = $this->Bidding_model->get_featured_alumnus_for_date($featureDate);
 
@@ -131,6 +138,13 @@ class Api extends CI_Controller
 
     public function featured_today_secure()
     {
+        // This endpoint requires authentication but returns the same data as the public one
+        if ($this->input->method(TRUE) !== 'GET') {
+            $this->respond([
+                'status' => 'error',
+                'message' => 'Method not allowed.'
+            ], 405);
+        }
         $this->authenticate_api_key();
 
         $featureDate = date('Y-m-d');

@@ -99,7 +99,40 @@ class User_model extends CI_Model
             ]);
     }
 
-    
 
-    
+    // Account lockout methods when failed login attempts exceed threshold
+
+    public function increment_failed_login($userId)
+    {
+        $user = $this->db->where('id', $userId)->get('users')->row();
+
+        if (!$user) {
+            return FALSE;
+        }
+
+        $attempts = (int) $user->failed_login_attempts + 1;
+        $data = [
+            'failed_login_attempts' => $attempts,
+            'last_failed_login_at' => date('Y-m-d H:i:s')
+        ];
+
+        if ($attempts >= 5) {
+            $data['locked_until'] = date('Y-m-d H:i:s', strtotime('+15 minutes'));
+        }
+
+        return $this->db->where('id', $userId)->update('users', $data);
+    }
+
+    public function reset_failed_login($userId)
+    {
+        return $this->db->where('id', $userId)->update('users', [
+            'failed_login_attempts' => 0,
+            'last_failed_login_at' => null,
+            'locked_until' => null
+        ]);
+    }
+
+
+
+
 }

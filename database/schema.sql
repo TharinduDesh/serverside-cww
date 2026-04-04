@@ -212,3 +212,11 @@ CREATE TABLE IF NOT EXISTS api_usage_logs (
 CREATE INDEX idx_api_keys_user_id ON api_keys(user_id);
 CREATE INDEX idx_api_keys_is_active ON api_keys(is_active);
 CREATE INDEX idx_api_usage_accessed_at ON api_usage_logs(accessed_at);
+
+
+-- Improvement for user login
+
+ALTER TABLE users
+ADD COLUMN failed_login_attempts INT NOT NULL DEFAULT 0,
+ADD COLUMN last_failed_login_at DATETIME NULL,
+ADD COLUMN locked_until DATETIME NULL;

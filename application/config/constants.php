@@ -95,10 +95,3 @@ defined('EXIT__AUTO_MAX') OR define('EXIT__AUTO_MAX', 125); // highest automatic
 |
 */
 
-define('SMTP_HOST', 'smtp.gmail.com');
-define('SMTP_PORT', 465);
-define('SMTP_USER', 'you@gmail.com');
-define('SMTP_PASS', 'your_app_password'); // Use an app password if you have 2FA enabled
-define('SMTP_FROM_EMAIL', 'you@gmail.com');
-define('SMTP_FROM_NAME', 'Alumni Influencer Platform');
-
