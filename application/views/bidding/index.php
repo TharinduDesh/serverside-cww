@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <title><?= isset($title) ? html_escape($title) : 'Blind Bidding'; ?></title>
@@ -25,12 +26,14 @@
             margin-top: 10px;
         }
 
-        table th, table td {
+        table th,
+        table td {
             padding: 8px;
             border: 1px solid #ccc;
         }
     </style>
 </head>
+
 <body>
     <h1>Blind Bidding</h1>
 
@@ -53,11 +56,11 @@
     <div class="section">
         <h2>Your Bidding Summary</h2>
         <p><strong>Target feature date:</strong> <?= html_escape($feature_date); ?></p>
-        <p><strong>Monthly featured wins:</strong> <?= (int)$monthly_wins; ?></p>
-        <p><strong>Remaining monthly slots:</strong> <?= (int)$remaining_slots; ?></p>
+        <p><strong>Monthly featured wins:</strong> <?= (int) $monthly_wins; ?></p>
+        <p><strong>Remaining monthly slots:</strong> <?= (int) $remaining_slots; ?></p>
 
         <?php if ($current_bid): ?>
-            <p><strong>Your current bid:</strong> £<?= number_format((float)$current_bid->bid_amount, 2); ?></p>
+            <p><strong>Your current bid:</strong> £<?= number_format((float) $current_bid->bid_amount, 2); ?></p>
             <p><strong>Current status:</strong> <?= html_escape(ucfirst($current_bid->status)); ?></p>
         <?php else: ?>
             <p>You have not placed a bid for this date yet.</p>
@@ -73,21 +76,21 @@
 
         <?= form_open('bidding/place_bid'); ?>
 
-            <p>
-                <label for="feature_date">Feature Date</label><br>
-                <input type="date" name="feature_date" id="feature_date" value="<?= html_escape($feature_date); ?>">
-            </p>
+        <p>
+            <label for="feature_date">Feature Date</label><br>
+            <input type="date" name="feature_date" id="feature_date" value="<?= html_escape($feature_date); ?>">
+        </p>
 
-            <p>
-                <label for="bid_amount">Bid Amount (£)</label><br>
-                <input type="number" step="0.01" min="0.01" name="bid_amount" id="bid_amount">
-            </p>
+        <p>
+            <label for="bid_amount">Bid Amount (£)</label><br>
+            <input type="number" step="0.01" min="0.01" name="bid_amount" id="bid_amount">
+        </p>
 
-            <p>
-                <button type="submit">
-                    <?= $current_bid ? 'Increase Bid' : 'Place Bid'; ?>
-                </button>
-            </p>
+        <p>
+            <button type="submit">
+                <?= $current_bid ? 'Increase Bid' : 'Place Bid'; ?>
+            </button>
+        </p>
 
         <?= form_close(); ?>
 
@@ -98,26 +101,27 @@
 
     <!-- Admin section for test purpose -->
 
-    <div class="section">
-        <h2>Test Winner Selection</h2>
+    <?php if (!empty($is_testing_mode)): ?>
 
-        <p>
-            This is for local testing/demo only. It will finalize the winner for the selected feature date.
-        </p>
+        <div class="section">
+            <h2>Test Winner Selection</h2>
 
-        <?= form_open('bidding/run_winner_selection_post'); ?>
+            <p>This is for testing only.</p>
+
+            <?= form_open('bidding/run_winner_selection_post'); ?>
             <input type="hidden" name="feature_date" value="<?= html_escape($feature_date); ?>">
 
             <p>
-                <button
-                    type="submit"
-                    onclick="return confirm('Run winner selection for <?= html_escape($feature_date); ?>? This will finalize the result for that date.');"
-                >
-                    Run Winner Selection for <?= html_escape($feature_date); ?>
+                <button type="submit"
+                    onclick="return confirm('Run winner selection for <?= html_escape($feature_date); ?>?');">
+                    Run Winner Selection
                 </button>
             </p>
-        <?= form_close(); ?>
-    </div>
+            <?= form_close(); ?>
+
+        </div>
+
+    <?php endif; ?>
 
     <!-- End admin section -->
 
@@ -135,7 +139,7 @@
                 <?php foreach ($bid_history as $bid): ?>
                     <tr>
                         <td><?= html_escape($bid->feature_date); ?></td>
-                        <td>£<?= number_format((float)$bid->bid_amount, 2); ?></td>
+                        <td>£<?= number_format((float) $bid->bid_amount, 2); ?></td>
                         <td><?= html_escape(ucfirst($bid->status)); ?></td>
                         <td><?= html_escape($bid->updated_at); ?></td>
                     </tr>
@@ -146,4 +150,5 @@
         <?php endif; ?>
     </div>
 </body>
+
 </html>

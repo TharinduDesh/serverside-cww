@@ -3,9 +3,15 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Bidding extends CI_Controller
 {
+    private $is_testing_mode = false;
     public function __construct()
     {
         parent::__construct();
+
+        $this->is_testing_mode =
+            isset($_ENV['BIDDING_TEST_MODE']) &&
+            $_ENV['BIDDING_TEST_MODE'] === 'true';
+
         $this->load->model('Bidding_model');
         $this->load->model('Profile_model');
         $this->load->model('User_model');
@@ -102,6 +108,8 @@ class Bidding extends CI_Controller
     public function index()
     {
         $this->require_login();
+
+        $data['is_testing_mode'] = $this->is_testing_mode;
 
         $userId = $this->session->userdata('user_id');
         $featureDate = $this->input->get('feature_date', TRUE);
