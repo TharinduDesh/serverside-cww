@@ -1,22 +1,46 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= isset($title) ? html_escape($title) : 'Developer API Keys'; ?></title>
     <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 24px;
+            background: #f8f9fa;
+            color: #222;
+        }
+
+        h1,
+        h2 {
+            margin-top: 0;
+        }
+
         .section {
-            border: 1px solid #ccc;
-            padding: 15px;
+            background: #fff;
+            border: 1px solid #dcdcdc;
+            padding: 16px;
             margin-bottom: 20px;
+            border-radius: 8px;
         }
 
         .success-message {
-            color: green;
+            color: #155724;
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            padding: 10px;
+            border-radius: 6px;
             margin-bottom: 15px;
         }
 
         .error-message {
-            color: red;
+            color: #721c24;
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            padding: 10px;
+            border-radius: 6px;
             margin-bottom: 15px;
         }
 
@@ -26,25 +50,66 @@
             padding: 10px;
             word-break: break-all;
             margin-top: 10px;
+            font-family: monospace;
+        }
+
+        .help-text {
+            font-size: 13px;
+            color: #555;
+            margin-top: 6px;
+        }
+
+        label {
+            font-weight: bold;
+        }
+
+        input[type="text"],
+        select {
+            width: 100%;
+            max-width: 420px;
+            padding: 8px;
+            margin-top: 6px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 8px 14px;
+            cursor: pointer;
+        }
+
+        .inline-form {
+            display: inline;
         }
 
         table {
             border-collapse: collapse;
             margin-top: 10px;
             width: 100%;
+            background: #fff;
         }
 
-        table th, table td {
+        table th,
+        table td {
             border: 1px solid #ccc;
             padding: 8px;
             text-align: left;
+            vertical-align: top;
+        }
+
+        table th {
+            background: #f1f1f1;
+        }
+
+        .muted {
+            color: #666;
         }
     </style>
 </head>
+
 <body>
     <h1>Developer API Keys</h1>
 
-    <p><a href="<?= site_url('auth/dashboard'); ?>">Back to Dashboard</a></p>
+    <p><a href="<?= site_url('dashboard'); ?>">Back to Dashboard</a></p>
 
     <?php if ($this->session->flashdata('success_message')): ?>
         <div class="success-message">
@@ -71,15 +136,27 @@
     <div class="section">
         <h2>Generate API Key</h2>
 
-        <?= form_open('developer/generate_key'); ?>
-            <p>
-                <label for="key_name">Key Name</label><br>
-                <input type="text" name="key_name" id="key_name" maxlength="100">
-            </p>
+        <?= form_open('developer/generate-key'); ?>
+        <p>
+            <label for="key_name">Key Name</label><br>
+            <input type="text" name="key_name" id="key_name" maxlength="100" required>
+        <div class="help-text">Example: Mobile AR Client, Demo Client, Testing Key</div>
+        </p>
 
-            <p>
-                <button type="submit">Generate Key</button>
-            </p>
+        <p>
+            <label for="scope">Scope</label><br>
+            <select name="scope" id="scope" required>
+                <option value="read">read</option>
+                <option value="read_stats">read_stats</option>
+                <option value="full">full</option>
+            </select>
+        <div class="help-text">Use the minimum scope needed. For featured alumnus retrieval, <strong>read</strong> is
+            usually enough.</div>
+        </p>
+
+        <p>
+            <button type="submit">Generate Key</button>
+        </p>
         <?= form_close(); ?>
     </div>
 
@@ -90,8 +167,11 @@
             <table>
                 <tr>
                     <th>Name</th>
+                    <th>Prefix</th>
+                    <th>Scope</th>
                     <th>Status</th>
                     <th>Created At</th>
+                    <th>Expires At</th>
                     <th>Last Used</th>
                     <th>Revoked At</th>
                     <th>Action</th>
@@ -99,15 +179,20 @@
                 <?php foreach ($api_keys as $api_key): ?>
                     <tr>
                         <td><?= html_escape($api_key->key_name); ?></td>
-                        <td><?= (int)$api_key->is_active === 1 ? 'Active' : 'Revoked'; ?></td>
+                        <td><?= !empty($api_key->key_prefix) ? html_escape($api_key->key_prefix) : '-'; ?></td>
+                        <td><?= !empty($api_key->scope) ? html_escape($api_key->scope) : 'read'; ?></td>
+                        <td><?= (int) $api_key->is_active === 1 ? 'Active' : 'Revoked'; ?></td>
                         <td><?= html_escape($api_key->created_at); ?></td>
+                        <td><?= !empty($api_key->expires_at) ? html_escape($api_key->expires_at) : 'Never'; ?></td>
                         <td><?= !empty($api_key->last_used_at) ? html_escape($api_key->last_used_at) : '-'; ?></td>
                         <td><?= !empty($api_key->revoked_at) ? html_escape($api_key->revoked_at) : '-'; ?></td>
                         <td>
-                            <?php if ((int)$api_key->is_active === 1): ?>
-                                <a href="<?= site_url('developer/revoke_key/' . $api_key->id); ?>" onclick="return confirm('Are you sure you want to revoke this API key?');">Revoke</a>
+                            <?php if ((int) $api_key->is_active === 1): ?>
+                                <?= form_open('developer/revoke-key/' . $api_key->id, ['class' => 'inline-form', 'onsubmit' => "return confirm('Are you sure you want to revoke this API key?');"]); ?>
+                                <button type="submit">Revoke</button>
+                                <?= form_close(); ?>
                             <?php else: ?>
-                                -
+                                <span class="muted">-</span>
                             <?php endif; ?>
                         </td>
                     </tr>
@@ -125,16 +210,22 @@
             <table>
                 <tr>
                     <th>Key Name</th>
+                    <th>Key Prefix</th>
+                    <th>Scope</th>
                     <th>Endpoint</th>
                     <th>Method</th>
+                    <th>Status Code</th>
                     <th>IP Address</th>
                     <th>Accessed At</th>
                 </tr>
                 <?php foreach ($usage_logs as $log): ?>
                     <tr>
                         <td><?= html_escape($log->key_name); ?></td>
+                        <td><?= !empty($log->key_prefix) ? html_escape($log->key_prefix) : '-'; ?></td>
+                        <td><?= !empty($log->scope) ? html_escape($log->scope) : '-'; ?></td>
                         <td><?= html_escape($log->endpoint); ?></td>
                         <td><?= html_escape($log->method); ?></td>
+                        <td><?= isset($log->status_code) && $log->status_code !== null ? (int) $log->status_code : '-'; ?></td>
                         <td><?= !empty($log->ip_address) ? html_escape($log->ip_address) : '-'; ?></td>
                         <td><?= html_escape($log->accessed_at); ?></td>
                     </tr>
@@ -145,4 +236,5 @@
         <?php endif; ?>
     </div>
 </body>
+
 </html>

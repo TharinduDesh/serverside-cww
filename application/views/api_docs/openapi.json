@@ -3,7 +3,7 @@
 	"info": {
 		"title": "Alumni Influencer API",
 		"version": "1.0.0",
-		"description": "API documentation for the Alumni Influencer coursework project."
+		"description": "OpenAPI documentation for the Alumni Influencer coursework project. Client applications access protected endpoints using Bearer API keys issued to developer accounts through the web dashboard."
 	},
 	"servers": [
 		{
@@ -13,39 +13,16 @@
 	],
 	"tags": [
 		{
-			"name": "Public API",
-			"description": "Public endpoints"
-		},
-		{
-			"name": "Protected API",
-			"description": "Bearer-token protected endpoints"
+			"name": "Featured Alumni API",
+			"description": "Endpoints for retrieving the current featured alumnus."
 		}
 	],
 	"paths": {
-		"/api/featured_today": {
+		"/api/featured-today": {
 			"get": {
-				"tags": ["Public API"],
+				"tags": ["Featured Alumni API"],
 				"summary": "Get today's featured alumnus",
-				"description": "Returns today's featured alumnus and profile data if available.",
-				"responses": {
-					"200": {
-						"description": "Successful response",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/FeaturedTodayResponse"
-								}
-							}
-						}
-					}
-				}
-			}
-		},
-		"/api/featured_today_secure": {
-			"get": {
-				"tags": ["Protected API"],
-				"summary": "Get today's featured alumnus (Bearer token required)",
-				"description": "Returns today's featured alumnus and profile data when a valid Bearer token is supplied.",
+				"description": "Returns today's featured alumnus and profile data. This endpoint requires a valid Bearer API key.",
 				"security": [
 					{
 						"BearerAuth": []
@@ -58,12 +35,113 @@
 							"application/json": {
 								"schema": {
 									"$ref": "#/components/schemas/FeaturedTodayResponse"
+								},
+								"examples": {
+									"featuredFound": {
+										"summary": "Featured alumnus found",
+										"value": {
+											"status": "success",
+											"data": {
+												"feature_date": "2026-04-05",
+												"user": {
+													"id": 5,
+													"first_name": "Tharindu",
+													"last_name": "Perera"
+												},
+												"profile": {
+													"headline": "Software Engineer",
+													"biography": "Graduate working in backend systems.",
+													"linkedin_url": "https://www.linkedin.com/in/example",
+													"profile_image_url": "http://localhost/serverside-cww/uploads/profile_images/example.png"
+												}
+											}
+										}
+									},
+									"noFeaturedAlumnus": {
+										"summary": "No featured alumnus selected yet",
+										"value": {
+											"status": "success",
+											"message": "No featured alumnus selected for today yet.",
+											"data": null
+										}
+									}
 								}
 							}
 						}
 					},
 					"401": {
-						"description": "Missing, invalid, or revoked API key",
+						"description": "Missing, invalid, expired, or revoked API key",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								},
+								"examples": {
+									"missingToken": {
+										"value": {
+											"status": "error",
+											"message": "Missing Bearer token."
+										}
+									},
+									"invalidToken": {
+										"value": {
+											"status": "error",
+											"message": "Invalid, expired, or revoked API key."
+										}
+									}
+								}
+							}
+						}
+					},
+					"403": {
+						"description": "Insufficient API key scope",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								},
+								"example": {
+									"status": "error",
+									"message": "Insufficient API key scope."
+								}
+							}
+						}
+					},
+					"405": {
+						"description": "Method not allowed",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/ErrorResponse"
+								},
+								"example": {
+									"status": "error",
+									"message": "Method not allowed."
+								}
+							}
+						}
+					}
+				}
+			}
+		},
+		"/api/featured-today-public": {
+			"get": {
+				"tags": ["Featured Alumni API"],
+				"summary": "Get today's featured alumnus (public demo endpoint)",
+				"description": "Returns today's featured alumnus and profile data without authentication. This endpoint is intended only for local demonstration or testing and should not be used as the main production client endpoint.",
+				"responses": {
+					"200": {
+						"description": "Successful response",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/FeaturedTodayResponse"
+								}
+							}
+						}
+					},
+					"405": {
+						"description": "Method not allowed",
 						"content": {
 							"application/json": {
 								"schema": {
@@ -81,7 +159,8 @@
 			"BearerAuth": {
 				"type": "http",
 				"scheme": "bearer",
-				"bearerFormat": "API Key"
+				"bearerFormat": "API Key",
+				"description": "Use the API key generated from the developer dashboard as a Bearer token in the Authorization header."
 			}
 		},
 		"schemas": {
@@ -108,7 +187,7 @@
 									"feature_date": {
 										"type": "string",
 										"format": "date",
-										"example": "2026-04-02"
+										"example": "2026-04-05"
 									},
 									"user": {
 										"type": "object",
@@ -167,7 +246,7 @@
 					},
 					"message": {
 						"type": "string",
-						"example": "Invalid or revoked API key."
+						"example": "Invalid, expired, or revoked API key."
 					}
 				}
 			}

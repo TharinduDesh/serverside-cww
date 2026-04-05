@@ -3,7 +3,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Auth extends CI_Controller
 {
-    private $allowed_domains = ['westminster.ac.uk', 'gmail.com'];
+    private $allowed_domains = ['westminster.ac.uk', 'gmail.com', 'eastminster.ac.uk'];
 
     public function __construct()
     {
@@ -264,7 +264,9 @@ class Auth extends CI_Controller
         echo '<p>You are logged in.</p>';
         echo '<p><a href="' . site_url('profile') . '">Manage Profile</a></p>';
         echo '<p><a href="' . site_url('bidding') . '">Blind Bidding</a></p>';
-        echo '<p><a href="' . site_url('developer') . '">Developer API Keys</a></p>';
+        if (in_array($this->session->userdata('role'), ['developer', 'admin'], true)) {
+            echo '<p><a href="' . site_url('developer') . '">Developer API Keys</a></p>';
+        }
         echo '<p><a href="' . site_url('auth/logout') . '">Logout</a></p>';
     }
 

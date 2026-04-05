@@ -7,9 +7,10 @@ class Developer extends CI_Controller
     {
         parent::__construct();
         $this->load->model('Api_key_model');
+        $this->require_developer();
     }
 
-    private function require_login()
+    private function require_developer()
     {
         if (!$this->session->userdata('logged_in')) {
             redirect('auth/login');
@@ -26,12 +27,17 @@ class Developer extends CI_Controller
         }
 
         $this->session->set_userdata('last_activity', time());
+
+        $role = $this->session->userdata('role');
+
+        if (!in_array($role, ['developer', 'admin'], true)) {
+            show_error('Forbidden: Developer access required.', 403);
+            exit;
+        }
     }
 
     public function index()
     {
-        $this->require_login();
-
         $userId = $this->session->userdata('user_id');
 
         $data['title'] = 'Developer API Keys';
@@ -43,11 +49,10 @@ class Developer extends CI_Controller
 
     public function generate_key()
     {
-        $this->require_login();
-
         $userId = $this->session->userdata('user_id');
 
         $this->form_validation->set_rules('key_name', 'Key Name', 'required|trim|max_length[100]');
+        $this->form_validation->set_rules('scope', 'Scope', 'required|trim|in_list[read,read_stats,full]');
 
         if ($this->form_validation->run() === FALSE) {
             $this->session->set_flashdata('error_message', validation_errors());
@@ -56,14 +61,18 @@ class Developer extends CI_Controller
         }
 
         $keyName = trim($this->input->post('key_name', TRUE));
+        $scope = trim($this->input->post('scope', TRUE));
 
         $rawKey = bin2hex(random_bytes(32));
         $keyHash = hash('sha256', $rawKey);
+        $keyPrefix = substr($rawKey, 0, 12);
 
         $this->Api_key_model->create_api_key([
             'user_id' => $userId,
             'key_name' => $keyName,
             'api_key_hash' => $keyHash,
+            'key_prefix' => $keyPrefix,
+            'scope' => $scope,
             'is_active' => 1
         ]);
 
@@ -75,7 +84,10 @@ class Developer extends CI_Controller
 
     public function revoke_key($id)
     {
-        $this->require_login();
+        // Only allow POST requests 
+        if ($this->input->method(TRUE) !== 'POST') {
+            show_error('Method Not Allowed', 405);
+        }
 
         $userId = $this->session->userdata('user_id');
         $apiKey = $this->Api_key_model->get_api_key_by_id($id, $userId);

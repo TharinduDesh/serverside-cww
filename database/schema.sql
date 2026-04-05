@@ -220,3 +220,23 @@ ALTER TABLE users
 ADD COLUMN failed_login_attempts INT NOT NULL DEFAULT 0,
 ADD COLUMN last_failed_login_at DATETIME NULL,
 ADD COLUMN locked_until DATETIME NULL;
+
+
+
+-- Users
+CREATE INDEX idx_users_role ON users(role);
+
+-- API keys improvements
+ALTER TABLE api_keys
+ADD COLUMN scope VARCHAR(100) NOT NULL DEFAULT 'read',
+ADD COLUMN key_prefix VARCHAR(20) NULL,
+ADD COLUMN expires_at DATETIME NULL;
+
+ALTER TABLE api_keys
+ADD CONSTRAINT uq_api_key_hash UNIQUE (api_key_hash);
+
+-- API logs
+CREATE INDEX idx_api_usage_key_id ON api_usage_logs(api_key_id);
+
+ALTER TABLE api_usage_logs
+ADD COLUMN status_code INT NULL;
