@@ -1,71 +1,57 @@
-###################
-What is CodeIgniter
-###################
+# Alumni Influencer Platform
 
-CodeIgniter is an Application Development Framework - a toolkit - for people
-who build web sites using PHP. Its goal is to enable you to develop projects
-much faster than you could if you were writing code from scratch, by providing
-a rich set of libraries for commonly needed tasks, as well as a simple
-interface and logical structure to access these libraries. CodeIgniter lets
-you creatively focus on your project by minimizing the amount of code needed
-for a given task.
+Alumni Influencer Platform is a CodeIgniter-based web application developed for **6COSC022C.2 Advanced Server-Side Web Programming** coursework.
 
-*******************
-Release Information
-*******************
+The system allows alumni to register, verify their email, build a professional profile, participate in blind bidding for the daily featured slot, and exposes a developer-facing API for retrieving the featured alumnus of the day.
 
-This repo contains in-development code for future releases. To download the
-latest stable release please visit the `CodeIgniter Downloads
-<https://codeigniter.com/download>`_ page.
+## Features
 
-**************************
-Changelog and New Features
-**************************
+- University email registration and login
+- Email verification and password reset
+- Alumni profile management
+- Blind bidding system
+- Developer API key generation and revocation
+- Bearer-token protected API
+- Swagger / OpenAPI documentation
+- API usage logging
 
-You can find a list of all changes for each release in the `user
-guide change log <https://github.com/bcit-ci/CodeIgniter/blob/develop/user_guide_src/source/changelog.rst>`_.
+## Tech Stack
 
-*******************
-Server Requirements
-*******************
+- PHP
+- CodeIgniter 3
+- MySQL
+- XAMPP
+- Gmail SMTP
+- Swagger UI / OpenAPI
 
-PHP version 5.6 or newer is recommended.
+## Main Routes
 
-It should work on 5.3.7 as well, but we strongly advise you NOT to run
-such old versions of PHP, because of potential security and performance
-issues, as well as missing features.
+### Web
+- `/register`
+- `/login`
+- `/logout`
+- `/dashboard`
+- `/profile`
+- `/bidding`
+- `/developer`
 
-************
-Installation
-************
+### API
+- `GET /api/featured-today` — protected endpoint
+- `GET /api/featured-today-public` — optional public demo endpoint
 
-Please see the `installation section <https://codeigniter.com/userguide3/installation/index.html>`_
-of the CodeIgniter User Guide.
+### Docs
+- `/api-docs`
+- `/api-spec.json`
 
-*******
-License
-*******
+## Setup
 
-Please see the `license
-agreement <https://github.com/bcit-ci/CodeIgniter/blob/develop/user_guide_src/source/license.rst>`_.
+1. Clone the repository
+2. Place the project inside your XAMPP `htdocs` folder
+3. Create a MySQL database
+4. Import the provided SQL schema
+5. Configure environment variables / local config for:
+   - database connection
+   - SMTP settings
+6. Start Apache and MySQL in XAMPP
+7. Open the application in the browser
 
-*********
-Resources
-*********
-
--  `User Guide <https://codeigniter.com/docs>`_
--  `Contributing Guide <https://github.com/bcit-ci/CodeIgniter/blob/develop/contributing.md>`_
--  `Language File Translations <https://github.com/bcit-ci/codeigniter3-translations>`_
--  `Community Forums <http://forum.codeigniter.com/>`_
--  `Community Wiki <https://github.com/bcit-ci/CodeIgniter/wiki>`_
--  `Community Slack Channel <https://codeigniterchat.slack.com>`_
-
-Report security issues to our `Security Panel <mailto:security@codeigniter.com>`_
-or via our `page on HackerOne <https://hackerone.com/codeigniter>`_, thank you.
-
-***************
-Acknowledgement
-***************
-
-The CodeIgniter team would like to thank EllisLab, all the
-contributors to the CodeIgniter project and you, the CodeIgniter user.
