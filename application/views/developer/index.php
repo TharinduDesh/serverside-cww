@@ -144,14 +144,22 @@
         </p>
 
         <p>
-            <label for="scope">Scope</label><br>
+            <label for="scope">Client Permission Scope</label><br>
             <select name="scope" id="scope" required>
-                <option value="read">read</option>
-                <option value="read_stats">read_stats</option>
-                <option value="full">full</option>
+                <option value="read:alumni,read:analytics">University Analytics Dashboard - read:alumni, read:analytics
+                </option>
+                <option value="read:alumni_of_day">Mobile AR App - read:alumni_of_day</option>
+                <option value="read:alumni">Alumni Data Only - read:alumni</option>
+                <option value="read:analytics">Analytics Data Only - read:analytics</option>
+                <option value="read:donations">Donation Data Only - read:donations</option>
+                <option value="full">Full Access - testing/admin only</option>
             </select>
-        <div class="help-text">Use the minimum scope needed. For featured alumnus retrieval, <strong>read</strong> is
-            usually enough.</div>
+
+        <div class="help-text">
+            Select the smallest permission needed for the client. For the University Analytics
+            Dashboard should use <strong>read:alumni,read:analytics</strong>, while the Mobile AR App
+            should use <strong>read:alumni_of_day</strong>.
+        </div>
         </p>
 
         <p>

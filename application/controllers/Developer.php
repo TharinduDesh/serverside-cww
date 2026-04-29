@@ -52,7 +52,7 @@ class Developer extends CI_Controller
         $userId = $this->session->userdata('user_id');
 
         $this->form_validation->set_rules('key_name', 'Key Name', 'required|trim|max_length[100]');
-        $this->form_validation->set_rules('scope', 'Scope', 'required|trim|in_list[read,read_stats,full]');
+        $this->form_validation->set_rules('scope', 'Scope', 'required|trim');
 
         if ($this->form_validation->run() === FALSE) {
             $this->session->set_flashdata('error_message', validation_errors());
@@ -63,11 +63,34 @@ class Developer extends CI_Controller
         $keyName = trim($this->input->post('key_name', TRUE));
         $scope = trim($this->input->post('scope', TRUE));
 
-        $rawKey = bin2hex(random_bytes(32));
+
+        $allowedScopes = [
+            'read:alumni,read:analytics',
+            'read:alumni_of_day',
+            'read:alumni',
+            'read:analytics',
+            'read:donations',
+            'full'
+        ];
+
+        if (!in_array($scope, $allowedScopes, true)) {
+            $this->session->set_flashdata('error_message', 'Invalid API key scope selected.');
+            redirect('developer');
+            return;
+        }
+
+        try {
+            $rawKey = bin2hex(random_bytes(32));
+        } catch (Exception $e) {
+            $this->session->set_flashdata('error_message', 'Unable to generate secure API key.');
+            redirect('developer');
+            return;
+        }
+
         $keyHash = hash('sha256', $rawKey);
         $keyPrefix = substr($rawKey, 0, 12);
 
-        $this->Api_key_model->create_api_key([
+        $created = $this->Api_key_model->create_api_key([
             'user_id' => $userId,
             'key_name' => $keyName,
             'api_key_hash' => $keyHash,
@@ -75,6 +98,12 @@ class Developer extends CI_Controller
             'scope' => $scope,
             'is_active' => 1
         ]);
+
+        if (!$created) {
+            $this->session->set_flashdata('error_message', 'Failed to create API key. Please try again.');
+            redirect('developer');
+            return;
+        }
 
         $this->session->set_flashdata('success_message', 'API key generated successfully. Copy it now; it will not be shown again.');
         $this->session->set_flashdata('generated_api_key', $rawKey);

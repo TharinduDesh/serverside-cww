@@ -158,7 +158,7 @@ class Api extends CI_Controller
             ], 405);
         }
 
-        $apiKey = $this->authenticate_api_key('read');
+        $apiKey = $this->authenticate_api_key('read:alumni_of_day');
 
         $payload = $this->get_featured_payload_for_today();
 

@@ -267,6 +267,7 @@ class Auth extends CI_Controller
         if (in_array($this->session->userdata('role'), ['developer', 'admin'], true)) {
             echo '<p><a href="' . site_url('developer') . '">Developer API Keys</a></p>';
         }
+        echo '<p><a href="' . site_url('university/dashboard') . '">University Analytics Dashboard</a></p>';
         echo '<p><a href="' . site_url('auth/logout') . '">Logout</a></p>';
     }
 

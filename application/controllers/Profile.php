@@ -215,6 +215,7 @@ class Profile extends CI_Controller
         $userId = $this->session->userdata('user_id');
 
         $this->form_validation->set_rules('degree_name', 'Degree Name', 'required|trim|max_length[255]');
+        $this->form_validation->set_rules('programme', 'Programme', 'trim|max_length[150]');
         $this->form_validation->set_rules('institution_name', 'Institution Name', 'required|trim|max_length[255]');
         $this->form_validation->set_rules('degree_url', 'Degree URL', 'trim|max_length[255]|callback_valid_degree_url');
         $this->form_validation->set_rules('completion_date', 'Completion Date', 'trim');
@@ -223,6 +224,10 @@ class Profile extends CI_Controller
             $data['title'] = 'My Profile';
             $data['profile'] = $this->Profile_model->get_profile_by_user_id($userId);
             $data['degrees'] = $this->Profile_model->get_degrees_by_user_id($userId);
+            $data['certifications'] = $this->Profile_model->get_certifications_by_user_id($userId);
+            $data['licences'] = $this->Profile_model->get_licences_by_user_id($userId);
+            $data['courses'] = $this->Profile_model->get_courses_by_user_id($userId);
+            $data['employment_history'] = $this->Profile_model->get_employment_history_by_user_id($userId);
             $data['degree_error'] = validation_errors();
             $this->load->view('profile/index', $data);
             return;
@@ -231,6 +236,7 @@ class Profile extends CI_Controller
         $degreeData = [
             'user_id' => $userId,
             'degree_name' => trim($this->input->post('degree_name', TRUE)),
+            'programme' => trim($this->input->post('programme', TRUE)),
             'institution_name' => trim($this->input->post('institution_name', TRUE)),
             'degree_url' => trim($this->input->post('degree_url', TRUE)),
             'completion_date' => $this->input->post('completion_date', TRUE) ?: null
@@ -254,6 +260,7 @@ class Profile extends CI_Controller
         }
 
         $this->form_validation->set_rules('degree_name', 'Degree Name', 'required|trim|max_length[255]');
+        $this->form_validation->set_rules('programme', 'Programme', 'trim|max_length[150]');
         $this->form_validation->set_rules('institution_name', 'Institution Name', 'required|trim|max_length[255]');
         $this->form_validation->set_rules('degree_url', 'Degree URL', 'trim|max_length[255]|callback_valid_degree_url');
         $this->form_validation->set_rules('completion_date', 'Completion Date', 'trim');
@@ -267,6 +274,7 @@ class Profile extends CI_Controller
 
         $degreeData = [
             'degree_name' => trim($this->input->post('degree_name', TRUE)),
+            'programme' => trim($this->input->post('programme', TRUE)),
             'institution_name' => trim($this->input->post('institution_name', TRUE)),
             'degree_url' => trim($this->input->post('degree_url', TRUE)),
             'completion_date' => $this->input->post('completion_date', TRUE) ?: null
@@ -601,7 +609,19 @@ class Profile extends CI_Controller
         redirect('profile');
     }
 
+
     // Employment history related methods
+
+    private function is_valid_date($date)
+    {
+        if (empty($date)) {
+            return FALSE;
+        }
+
+        $dateObject = DateTime::createFromFormat('Y-m-d', $date);
+
+        return $dateObject && $dateObject->format('Y-m-d') === $date;
+    }
 
     private function validate_employment_dates($startDate, $endDate, $isCurrent)
     {
@@ -640,6 +660,8 @@ class Profile extends CI_Controller
 
         $this->form_validation->set_rules('company_name', 'Company Name', 'required|trim|max_length[255]');
         $this->form_validation->set_rules('job_title', 'Job Title', 'required|trim|max_length[255]');
+        $this->form_validation->set_rules('industry_sector', 'Industry Sector', 'trim|max_length[100]');
+        $this->form_validation->set_rules('location', 'Location', 'trim|max_length[150]');
         $this->form_validation->set_rules('start_date', 'Start Date', 'required|trim');
         $this->form_validation->set_rules('end_date', 'End Date', 'trim');
         $this->form_validation->set_rules('description', 'Description', 'trim|max_length[3000]');
@@ -667,6 +689,8 @@ class Profile extends CI_Controller
             'user_id' => $userId,
             'company_name' => trim($this->input->post('company_name', TRUE)),
             'job_title' => trim($this->input->post('job_title', TRUE)),
+            'industry_sector' => trim($this->input->post('industry_sector', TRUE)),
+            'location' => trim($this->input->post('location', TRUE)),
             'start_date' => $startDate,
             'end_date' => $isCurrent ? null : ($endDate ?: null),
             'is_current' => $isCurrent,
@@ -692,6 +716,8 @@ class Profile extends CI_Controller
 
         $this->form_validation->set_rules('company_name', 'Company Name', 'required|trim|max_length[255]');
         $this->form_validation->set_rules('job_title', 'Job Title', 'required|trim|max_length[255]');
+        $this->form_validation->set_rules('industry_sector', 'Industry Sector', 'trim|max_length[100]');
+        $this->form_validation->set_rules('location', 'Location', 'trim|max_length[150]');
         $this->form_validation->set_rules('start_date', 'Start Date', 'required|trim');
         $this->form_validation->set_rules('end_date', 'End Date', 'trim');
         $this->form_validation->set_rules('description', 'Description', 'trim|max_length[3000]');
@@ -713,6 +739,8 @@ class Profile extends CI_Controller
         $employmentData = [
             'company_name' => trim($this->input->post('company_name', TRUE)),
             'job_title' => trim($this->input->post('job_title', TRUE)),
+            'industry_sector' => trim($this->input->post('industry_sector', TRUE)),
+            'location' => trim($this->input->post('location', TRUE)),
             'start_date' => $startDate,
             'end_date' => $isCurrent ? null : ($endDate ?: null),
             'is_current' => $isCurrent,

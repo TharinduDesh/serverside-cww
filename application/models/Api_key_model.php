@@ -54,22 +54,43 @@ class Api_key_model extends CI_Model
             ->row();
     }
 
-    public function api_key_has_scope($apiKey, $requiredScope = 'read')
+    public function api_key_has_scope($apiKey, $requiredScope = 'read:alumni_of_day')
     {
         if (!$apiKey || empty($apiKey->scope)) {
             return false;
         }
 
-        $scopeHierarchy = [
-            'read' => 1,
-            'read_stats' => 2,
-            'full' => 3
-        ];
+        $scope = trim($apiKey->scope);
 
-        $current = $scopeHierarchy[$apiKey->scope] ?? 0;
-        $required = $scopeHierarchy[$requiredScope] ?? 999;
+        /*
+         * Full access is kept only for local testing/admin keys.
+         */
+        if ($scope === 'full') {
+            return true;
+        }
 
-        return $current >= $required;
+        /*
+         * Backward compatibility for old CW1 keys.
+         * Old "read" keys can access the alumni-of-day endpoint only.
+         */
+        if ($scope === 'read' && $requiredScope === 'read:alumni_of_day') {
+            return true;
+        }
+
+        /*
+         * Exact match for single-scope keys.
+         */
+        if ($scope === $requiredScope) {
+            return true;
+        }
+
+        /*
+         * Comma-separated multi-scope keys.
+         * Example: read:alumni,read:analytics
+         */
+        $scopes = array_map('trim', explode(',', $scope));
+
+        return in_array($requiredScope, $scopes, true);
     }
 
     public function update_last_used($apiKeyId)

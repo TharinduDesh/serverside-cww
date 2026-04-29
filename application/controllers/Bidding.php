@@ -217,28 +217,32 @@ class Bidding extends CI_Controller
         redirect('bidding?feature_date=' . urlencode($featureDate));
     }
 
-    public function run_winner_selection($featureDate = null)
+    private function select_winner_for_feature_date($featureDate)
     {
-        $this->require_login();
-
-        if (empty($featureDate)) {
-            $featureDate = $this->get_default_feature_date();
-        }
-
         if (!$this->is_valid_date($featureDate)) {
-            show_error('Invalid feature date.', 400);
+            return [
+                'success' => false,
+                'message' => 'Invalid feature date.',
+                'status_code' => 400
+            ];
         }
 
         if ($this->Bidding_model->featured_record_exists($featureDate)) {
-            echo 'Winner already selected for ' . html_escape($featureDate) . '.';
-            return;
+            return [
+                'success' => false,
+                'message' => 'Winner already selected for ' . $featureDate . '.',
+                'status_code' => 409
+            ];
         }
 
         $bids = $this->Bidding_model->get_bids_for_feature_date_ordered($featureDate);
 
         if (empty($bids)) {
-            echo 'No bids available for ' . html_escape($featureDate) . '.';
-            return;
+            return [
+                'success' => false,
+                'message' => 'No bids available for ' . $featureDate . '.',
+                'status_code' => 404
+            ];
         }
 
         $winningBid = null;
@@ -253,8 +257,11 @@ class Bidding extends CI_Controller
         }
 
         if (!$winningBid) {
-            echo 'No eligible bidder found for ' . html_escape($featureDate) . '.';
-            return;
+            return [
+                'success' => false,
+                'message' => 'No eligible bidder found for ' . $featureDate . '.',
+                'status_code' => 404
+            ];
         }
 
         $this->db->trans_start();
@@ -271,20 +278,85 @@ class Bidding extends CI_Controller
         $this->db->trans_complete();
 
         if ($this->db->trans_status() === FALSE) {
-            show_error('Failed to finalize winner selection.', 500);
+            return [
+                'success' => false,
+                'message' => 'Failed to finalize winner selection.',
+                'status_code' => 500
+            ];
         }
 
         $bidders = $this->Bidding_model->get_bids_with_user_details_for_feature_date($featureDate);
 
         foreach ($bidders as $bidder) {
             if ((int) $bidder->id === (int) $winningBid->id) {
-                $this->send_winner_notification($bidder, $featureDate);
+                $sent = $this->send_winner_notification($bidder, $featureDate);
+
+                if (!$sent) {
+                    log_message('error', 'Failed to send winner notification for bid ID ' . $bidder->id);
+                }
             } else {
-                $this->send_loser_notification($bidder, $featureDate);
+                $sent = $this->send_loser_notification($bidder, $featureDate);
+
+                if (!$sent) {
+                    log_message('error', 'Failed to send loser notification for bid ID ' . $bidder->id);
+                }
             }
         }
 
-        echo 'Winner selected and email notifications sent for ' . html_escape($featureDate) . '.';
+        return [
+            'success' => true,
+            'message' => 'Winner selected and email notifications sent for ' . $featureDate . '.',
+            'status_code' => 200,
+            'winning_bid_id' => $winningBid->id,
+            'winning_user_id' => $winningBid->user_id
+        ];
+    }
+
+    public function run_winner_selection($featureDate = null)
+    {
+        $this->require_login();
+
+        if (empty($featureDate)) {
+            $featureDate = $this->get_default_feature_date();
+        }
+
+        $result = $this->select_winner_for_feature_date($featureDate);
+
+        if (!$result['success'] && $result['status_code'] >= 400) {
+            echo html_escape($result['message']);
+            return;
+        }
+
+        echo html_escape($result['message']);
+    }
+
+    public function run_winner_selection_cli($featureDate = null)
+    {
+        if (!$this->input->is_cli_request()) {
+            show_error('This method can only be run from the command line.', 403);
+            return;
+        }
+
+        /*
+         * At midnight, the system selects the winner for the current date.
+         * Example:
+         * php index.php bidding run_winner_selection_cli
+         *
+         * For testing a specific date:
+         * php index.php bidding run_winner_selection_cli 2026-04-30
+         */
+        if (empty($featureDate)) {
+            $featureDate = date('Y-m-d');
+        }
+
+        $result = $this->select_winner_for_feature_date($featureDate);
+
+        echo '[' . date('Y-m-d H:i:s') . '] ' . $result['message'] . PHP_EOL;
+
+        if (!empty($result['winning_bid_id'])) {
+            echo 'Winning Bid ID: ' . $result['winning_bid_id'] . PHP_EOL;
+            echo 'Winning User ID: ' . $result['winning_user_id'] . PHP_EOL;
+        }
     }
 
     public function featured_today()

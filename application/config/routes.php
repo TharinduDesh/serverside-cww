@@ -63,3 +63,41 @@ $route['api-spec.json'] = 'api_docs/spec';
 */
 $route['api/featured-today'] = 'api/featured_today';
 $route['api/featured-today-public'] = 'api/featured_today_public';
+
+
+/*
+|--------------------------------------------------------------------------
+| University Analytics API Endpoints - CW2
+|--------------------------------------------------------------------------
+*/
+$route['api/analytics/summary'] = 'analytics_api/summary';
+$route['api/analytics/programmes'] = 'analytics_api/programmes';
+$route['api/analytics/graduation-years'] = 'analytics_api/graduation_years';
+$route['api/analytics/industry-sectors'] = 'analytics_api/industry_sectors';
+$route['api/analytics/job-titles'] = 'analytics_api/job_titles';
+$route['api/analytics/certifications'] = 'analytics_api/certifications';
+$route['api/analytics/courses'] = 'analytics_api/courses';
+$route['api/analytics/top-employers'] = 'analytics_api/top_employers';
+$route['api/analytics/geography'] = 'analytics_api/geography';
+$route['api/analytics/skills-gap'] = 'analytics_api/skills_gap';
+$route['api/analytics/filter-options'] = 'analytics_api/filter_options';
+$route['api/analytics/alumni'] = 'analytics_api/alumni';
+
+/*
+|--------------------------------------------------------------------------
+| University Analytics Dashboard - CW2
+|--------------------------------------------------------------------------
+*/
+$route['university'] = 'university/dashboard';
+$route['university/dashboard'] = 'university/dashboard';
+$route['university/graphs'] = 'university/graphs';
+$route['university/alumni'] = 'university/alumni';
+$route['university/reports'] = 'university/reports';
+
+/*
+|--------------------------------------------------------------------------
+| Export CSV Routes - CW2
+|--------------------------------------------------------------------------
+*/
+$route['export/alumni-csv'] = 'export/alumni_csv';
+$route['export/analytics-summary-csv'] = 'export/analytics_summary_csv';
